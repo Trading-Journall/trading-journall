@@ -195,6 +195,33 @@
   .logout-btn { font-size: 12px; color: var(--text2); background: none; border: 0.5px solid var(--border); border-radius: 20px; padding: 4px 10px; cursor: pointer; font-family: inherit; }
   .logout-btn:hover { background: var(--bg2); }
   .loading-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; font-size: 13px; color: var(--text2); }
+  /* ANALYSE PAGE */
+  .add-analyse-btn { padding: 9px 18px; border-radius: var(--radius); background: var(--text); color: var(--bg); border: none; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; transition: opacity 0.12s; }
+  .add-analyse-btn:hover { opacity: 0.85; }
+  .analyse-form-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
+  .analyse-filters { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .analyse-week-group { margin-bottom: 24px; }
+  .analyse-week-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1.5px solid var(--border); }
+  .analyse-week-badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--blue-bg); color: var(--blue); }
+  .analyse-week-label { font-size: 13px; font-weight: 500; color: var(--text2); }
+  .analyse-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.12s; }
+  .analyse-card:hover { border-color: var(--border2); }
+  .analyse-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .analyse-card-pair { font-size: 15px; font-weight: 600; color: var(--text); }
+  .analyse-card-date { font-size: 11px; color: var(--text3); }
+  .analyse-card-bias { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px; }
+  .bias-bullish { background: var(--green-bg); color: var(--green); }
+  .bias-bearish { background: var(--red-bg); color: var(--red); }
+  .bias-neutral { background: var(--bg2); color: var(--text2); }
+  .analyse-card-body { font-size: 13px; color: var(--text2); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .analyse-card-screens { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .analyse-card-screens img { width: 100%; border-radius: 8px; max-height: 140px; object-fit: cover; }
+  .analyse-card-levels { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .analyse-level { font-size: 11px; padding: 4px 10px; border-radius: 6px; }
+  .analyse-level.support { background: var(--green-bg); color: var(--green); }
+  .analyse-level.resistance { background: var(--red-bg); color: var(--red); }
+  .analyse-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 8px; }
+
   /* FILTERS */
   .filter-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 12px; }
   .filter-reset-btn { padding: 9px 14px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text2); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.12s; width: 100%; }
@@ -387,6 +414,7 @@
     <button class="tab active" onclick="showTab('dashboard')">Dashboard</button>
     <button class="tab" onclick="showTab('new')">+ Trade</button>
     <button class="tab" onclick="showTab('trades')">Historique</button>
+    <button class="tab" onclick="showTab('analyse')">📝 Analyse</button>
     <button class="tab" onclick="showTab('checklist')">✅ Checklist</button>
     <button class="tab" onclick="showTab('stats')">Stats</button>
   </div>
@@ -488,6 +516,95 @@
     </div>
     <div id="filter-summary" class="filter-summary"></div>
     <div class="trades-list" id="trades-list"></div>
+  </div>
+
+  <!-- ANALYSE WEEKEND -->
+  <div id="tab-analyse" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <p class="section-title" style="margin:0;">Analyses</p>
+        <p style="font-size:12px;color:var(--text3);margin-top:4px;">Tes analyses de marché par semaine</p>
+      </div>
+      <button class="add-analyse-btn" onclick="showAnalyseForm()">+ Nouvelle analyse</button>
+    </div>
+
+    <!-- FORM NOUVELLE ANALYSE (hidden by default) -->
+    <div class="analyse-form-card" id="analyse-form" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-size:15px;font-weight:600;color:var(--text);">Nouvelle analyse</span>
+        <button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text2);" onclick="hideAnalyseForm()">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Paire</label>
+          <input type="text" id="a-pair" list="pair-list" placeholder="EURUSD, XAUUSD..." autocomplete="off" style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="a-date">
+        </div>
+        <div class="form-group">
+          <label>Timeframe</label>
+          <select id="a-tf"><option>M1</option><option>M5</option><option>M15</option><option>M30</option><option>H1</option><option>H4</option><option>D1</option><option>W1</option></select>
+        </div>
+        <div class="form-group">
+          <label>Biais</label>
+          <select id="a-bias"><option value="bullish">🟢 Bullish</option><option value="bearish">🔴 Bearish</option><option value="neutral">⚪ Neutre</option></select>
+        </div>
+        <div class="form-group">
+          <label>Session visée</label>
+          <select id="a-session"><option>London</option><option>New York</option><option>Asian</option><option>Overlap</option></select>
+        </div>
+        <div class="form-group">
+          <label>Semaine</label>
+          <input type="week" id="a-week">
+        </div>
+      </div>
+      <p class="section-title">Screenshots du chart</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Chart 1</div>
+          <div class="screenshot-zone" style="padding:14px 10px;" id="a-sc1-zone" onclick="document.getElementById('a-sc1-input').click()">
+            <input type="file" id="a-sc1-input" accept="image/*" style="display:none" onchange="handleAnalyseScreenshot(event,1)">
+            <div class="sc-label">📸 Upload chart</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Chart 2</div>
+          <div class="screenshot-zone" style="padding:14px 10px;" id="a-sc2-zone" onclick="document.getElementById('a-sc2-input').click()">
+            <input type="file" id="a-sc2-input" accept="image/*" style="display:none" onchange="handleAnalyseScreenshot(event,2)">
+            <div class="sc-label">📸 Upload chart</div>
+          </div>
+        </div>
+      </div>
+      <p class="section-title">Analyse</p>
+      <div class="form-group"><textarea id="a-text" placeholder="Tendance HTF, niveaux clés, plan de la semaine, zones d'intérêt..." style="min-height:100px;"></textarea></div>
+      <p class="section-title">Niveaux clés</p>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group"><label>Support</label><input type="text" id="a-support" placeholder="ex: 1.0850, 1.0780"></div>
+        <div class="form-group"><label>Résistance</label><input type="text" id="a-resistance" placeholder="ex: 1.0950, 1.1020"></div>
+      </div>
+      <button class="save-btn" onclick="saveAnalyse()">Enregistrer l'analyse</button>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="analyse-filters" id="analyse-filters">
+      <div class="form-group">
+        <label>Paire</label>
+        <select id="a-filter-pair" onchange="renderAnalyses()"><option value="">Toutes</option></select>
+      </div>
+      <div class="form-group">
+        <label>Semaine</label>
+        <select id="a-filter-week" onchange="renderAnalyses()"><option value="">Toutes</option></select>
+      </div>
+      <div class="form-group" style="justify-content:flex-end;">
+        <label>&nbsp;</label>
+        <button class="filter-reset-btn" onclick="resetAnalyseFilters()">↻ Reset</button>
+      </div>
+    </div>
+
+    <!-- ANALYSES LIST grouped by week -->
+    <div id="analyses-list"></div>
   </div>
 
   <!-- CHECKLIST PRÉ-TRADE -->
@@ -637,6 +754,7 @@ async function init() {
   if (session && session.user) {
     currentUser = session.user;
     await loadTrades();
+    await loadAnalyses();
     showMainApp();
   } else {
     // Try to refresh the session before giving up
@@ -644,6 +762,7 @@ async function init() {
     if (refreshData?.session) {
       currentUser = refreshData.session.user;
       await loadTrades();
+      await loadAnalyses();
       showMainApp();
     } else {
       showAuthApp();
@@ -654,14 +773,17 @@ async function init() {
       currentUser = session.user;
       if (document.getElementById('main-app').style.display === 'none') {
         await loadTrades();
+        await loadAnalyses();
         showMainApp();
       } else if (event === 'TOKEN_REFRESHED') {
         // Session refreshed silently — reload trades if stale
         await loadTrades();
+        await loadAnalyses();
         renderDashboard();
       }
     } else if (event === 'SIGNED_OUT') {
       trades = [];
+      analyses = [];
       currentUser = null;
       showAuthApp();
     }
@@ -749,12 +871,14 @@ async function handleAuth() {
     if (data.session) {
       currentUser = data.session.user;
       await loadTrades();
+      await loadAnalyses();
       showMainApp(); return;
     }
     const { data: ld, error: le } = await sb.auth.signInWithPassword({ email, password });
     if (!le && ld.session) {
       currentUser = ld.session.user;
       await loadTrades();
+      await loadAnalyses();
       showMainApp(); return;
     }
     errEl.textContent = 'Compte créé ! Tu peux maintenant te connecter.';
@@ -854,10 +978,11 @@ function showTab(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  const idx = ['dashboard','new','trades','checklist','stats'].indexOf(name);
+  const idx = ['dashboard','new','trades','analyse','checklist','stats'].indexOf(name);
   document.querySelectorAll('.tab')[idx].classList.add('active');
   if (name === 'dashboard') renderDashboard();
   if (name === 'trades') renderAllTrades();
+  if (name === 'analyse') renderAnalyses();
   if (name === 'checklist') renderChecklist();
   if (name === 'stats') renderStats();
 }
@@ -1260,6 +1385,204 @@ function closeLightbox(e) {
   if (e && e.target === document.getElementById('lightbox-img')) return;
   document.getElementById('lightbox').classList.remove('open');
   document.body.style.overflow = '';
+}
+
+// ── ANALYSES ──────────────────────────────────────────────────────────────────
+let analyses = [];
+let analyseScreenshots = { sc1: null, sc2: null };
+
+async function loadAnalyses() {
+  if (!currentUser) return;
+  const { data, error } = await sb.from('analyses').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+  if (!error && data) analyses = data;
+}
+
+function showAnalyseForm() {
+  document.getElementById('analyse-form').style.display = 'block';
+  document.getElementById('a-date').value = new Date().toISOString().split('T')[0];
+  // Set current week
+  const now = new Date();
+  const yr = now.getFullYear();
+  const oneJan = new Date(yr, 0, 1);
+  const wk = Math.ceil(((now - oneJan) / 86400000 + oneJan.getDay() + 1) / 7);
+  document.getElementById('a-week').value = yr + '-W' + String(wk).padStart(2, '0');
+  analyseScreenshots = { sc1: null, sc2: null };
+}
+
+function hideAnalyseForm() {
+  document.getElementById('analyse-form').style.display = 'none';
+  ['a-pair','a-text','a-support','a-resistance'].forEach(id => document.getElementById(id).value = '');
+  analyseScreenshots = { sc1: null, sc2: null };
+  // Reset screenshot zones
+  [1,2].forEach(n => {
+    document.getElementById('a-sc'+n+'-zone').innerHTML = `<input type="file" id="a-sc${n}-input" accept="image/*" style="display:none" onchange="handleAnalyseScreenshot(event,${n})"><div class="sc-label">📸 Upload chart</div>`;
+    document.getElementById('a-sc'+n+'-zone').onclick = () => document.getElementById('a-sc'+n+'-input').click();
+  });
+}
+
+function handleAnalyseScreenshot(e, num) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    analyseScreenshots['sc'+num] = ev.target.result;
+    const zone = document.getElementById('a-sc'+num+'-zone');
+    zone.innerHTML = `<input type="file" id="a-sc${num}-input" accept="image/*" style="display:none" onchange="handleAnalyseScreenshot(event,${num})"><img src="${ev.target.result}" class="sc-preview" style="max-height:120px;object-fit:cover;"><div class="sc-hint" style="margin-top:4px;">Clique pour changer</div>`;
+    document.getElementById('a-sc'+num+'-input').onchange = ev2 => handleAnalyseScreenshot(ev2, num);
+    zone.onclick = () => document.getElementById('a-sc'+num+'-input').click();
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveAnalyse() {
+  const pair = (document.getElementById('a-pair').value || '').trim().toUpperCase();
+  const date = document.getElementById('a-date').value;
+  if (!pair || !date) { showToast('Remplis la paire et la date'); return; }
+  const analyse = {
+    user_id: currentUser.id,
+    pair,
+    date,
+    tf: document.getElementById('a-tf').value,
+    bias: document.getElementById('a-bias').value,
+    session: document.getElementById('a-session').value,
+    week: document.getElementById('a-week').value,
+    text: document.getElementById('a-text').value,
+    support: document.getElementById('a-support').value,
+    resistance: document.getElementById('a-resistance').value,
+    screenshot1: analyseScreenshots.sc1,
+    screenshot2: analyseScreenshots.sc2,
+  };
+  setSyncStatus('syncing');
+  await ensureAuth();
+  const { data, error } = await sb.from('analyses').insert(analyse).select().single();
+  if (error) { showToast('Erreur sauvegarde: ' + (error.message || '')); setSyncStatus('offline'); return; }
+  if (data) analyses.unshift(data);
+  setSyncStatus('online');
+  showToast('Analyse enregistrée ✓');
+  hideAnalyseForm();
+  renderAnalyses();
+}
+
+function renderAnalyses() {
+  // Populate pair filter
+  const pairSelect = document.getElementById('a-filter-pair');
+  const curPair = pairSelect.value;
+  const pairs = [...new Set(analyses.map(a => a.pair))].sort();
+  pairSelect.innerHTML = '<option value="">Toutes</option>' + pairs.map(p => `<option${p===curPair?' selected':''}>${p}</option>`).join('');
+
+  // Populate week filter
+  const weekSelect = document.getElementById('a-filter-week');
+  const curWeek = weekSelect.value;
+  const weeks = [...new Set(analyses.map(a => a.week).filter(Boolean))].sort().reverse();
+  weekSelect.innerHTML = '<option value="">Toutes</option>' + weeks.map(w => `<option${w===curWeek?' selected':''}>${w}</option>`).join('');
+
+  // Apply filters
+  let filtered = analyses;
+  if (curPair) filtered = filtered.filter(a => a.pair === curPair);
+  if (curWeek) filtered = filtered.filter(a => a.week === curWeek);
+
+  const el = document.getElementById('analyses-list');
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty-state">Aucune analyse — clique sur "+ Nouvelle analyse" pour commencer</div>';
+    return;
+  }
+
+  // Group by week
+  const grouped = {};
+  filtered.forEach(a => {
+    const wk = a.week || 'Sans semaine';
+    if (!grouped[wk]) grouped[wk] = [];
+    grouped[wk].push(a);
+  });
+
+  const sortedWeeks = Object.keys(grouped).sort().reverse();
+  let html = '';
+  sortedWeeks.forEach(wk => {
+    const weekLabel = wk.startsWith('20') ? formatWeekLabel(wk) : wk;
+    html += `<div class="analyse-week-group">`;
+    html += `<div class="analyse-week-header"><span class="analyse-week-badge">${wk}</span><span class="analyse-week-label">${weekLabel}</span><span style="margin-left:auto;font-size:11px;color:var(--text3);">${grouped[wk].length} analyse${grouped[wk].length>1?'s':''}</span></div>`;
+    html += `<div class="analyse-cards-grid">`;
+    grouped[wk].forEach(a => {
+      const biasLabel = {bullish:'🟢 Bullish',bearish:'🔴 Bearish',neutral:'⚪ Neutre'}[a.bias] || '';
+      const biasCls = {bullish:'bias-bullish',bearish:'bias-bearish',neutral:'bias-neutral'}[a.bias] || 'bias-neutral';
+      html += `<div class="analyse-card" onclick="openAnalyse(${a.id})">
+        <div class="analyse-card-top">
+          <span class="analyse-card-pair">${a.pair}</span>
+          <span class="badge badge-open">${a.tf || ''}</span>
+          <span class="analyse-card-bias ${biasCls}">${biasLabel}</span>
+          <span class="analyse-card-date" style="margin-left:auto;">${a.date}</span>
+        </div>
+        ${a.text ? `<div class="analyse-card-body">${a.text}</div>` : ''}
+        ${a.screenshot1 || a.screenshot2 ? `<div class="analyse-card-screens">
+          ${a.screenshot1 ? `<img src="${a.screenshot1}" alt="chart">` : ''}
+          ${a.screenshot2 ? `<img src="${a.screenshot2}" alt="chart">` : ''}
+        </div>` : ''}
+        ${a.support || a.resistance ? `<div class="analyse-card-levels">
+          ${a.support ? `<span class="analyse-level support">S: ${a.support}</span>` : ''}
+          ${a.resistance ? `<span class="analyse-level resistance">R: ${a.resistance}</span>` : ''}
+        </div>` : ''}
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  el.innerHTML = html;
+}
+
+function formatWeekLabel(weekStr) {
+  try {
+    const [yr, wk] = weekStr.split('-W');
+    const d = new Date(yr, 0, 1 + (parseInt(wk) - 1) * 7);
+    const end = new Date(d); end.setDate(d.getDate() + 6);
+    const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+    return `${d.getDate()} ${months[d.getMonth()]} — ${end.getDate()} ${months[end.getMonth()]} ${yr}`;
+  } catch(e) { return weekStr; }
+}
+
+function openAnalyse(id) {
+  const a = analyses.find(x => x.id === id);
+  if (!a) return;
+  const biasLabel = {bullish:'🟢 Bullish',bearish:'🔴 Bearish',neutral:'⚪ Neutre'}[a.bias] || '';
+  const biasCls = {bullish:'bias-bullish',bearish:'bias-bearish',neutral:'bias-neutral'}[a.bias] || 'bias-neutral';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-title">${a.pair} — Analyse ${a.date}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <span class="analyse-card-bias ${biasCls}" style="font-size:12px;padding:4px 10px;">${biasLabel}</span>
+      <span class="badge badge-open">${a.tf || ''}</span>
+      <span class="badge badge-open">${a.session || ''}</span>
+      ${a.week ? `<span class="analyse-week-badge">${a.week}</span>` : ''}
+    </div>
+    ${a.screenshot1 || a.screenshot2 ? `<div style="display:grid;grid-template-columns:${a.screenshot1 && a.screenshot2 ? '1fr 1fr' : '1fr'};gap:8px;margin-bottom:14px;">
+      ${a.screenshot1 ? `<img src="${a.screenshot1}" class="chart-img zoomable" style="margin:0;" onclick="openLightbox('${a.screenshot1}','Chart 1')">` : ''}
+      ${a.screenshot2 ? `<img src="${a.screenshot2}" class="chart-img zoomable" style="margin:0;" onclick="openLightbox('${a.screenshot2}','Chart 2')">` : ''}
+    </div>` : ''}
+    ${a.text ? `<div class="analysis-block"><strong>Analyse</strong>${a.text}</div>` : ''}
+    ${a.support ? `<div class="analysis-block"><strong>Support</strong>${a.support}</div>` : ''}
+    ${a.resistance ? `<div class="analysis-block"><strong>Résistance</strong>${a.resistance}</div>` : ''}
+    <button class="del-btn" onclick="deleteAnalyse(${a.id})">Supprimer cette analyse</button>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+async function deleteAnalyse(id) {
+  if (!confirm('Supprimer cette analyse ?')) return;
+  await ensureAuth();
+  setSyncStatus('syncing');
+  const { error } = await sb.from('analyses').delete().eq('id', id).eq('user_id', currentUser.id);
+  if (!error) {
+    analyses = analyses.filter(a => a.id !== id);
+    document.getElementById('modal').classList.remove('open');
+    showToast('Analyse supprimée');
+    setSyncStatus('online');
+    renderAnalyses();
+  } else {
+    setSyncStatus('offline');
+  }
+}
+
+function resetAnalyseFilters() {
+  document.getElementById('a-filter-pair').value = '';
+  document.getElementById('a-filter-week').value = '';
+  renderAnalyses();
 }
 
 function resetChecklist() {
