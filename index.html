@@ -222,6 +222,34 @@
   .analyse-level.resistance { background: var(--red-bg); color: var(--red); }
   .analyse-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 8px; }
 
+  /* HTML EDITOR */
+  .html-editor-wrap { border: 0.5px solid var(--border2); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
+  .html-editor-tabs { display: flex; background: var(--bg2); border-bottom: 0.5px solid var(--border); }
+  .html-tab { flex: 1; padding: 8px; text-align: center; font-size: 12px; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--text2); font-family: inherit; transition: all 0.12s; }
+  .html-tab.active { background: var(--bg); color: var(--text); }
+  .html-code-area { width: 100%; min-height: 140px; padding: 12px; border: none; background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 12px; line-height: 1.5; resize: vertical; outline: none; }
+  .html-preview-area { padding: 14px; min-height: 140px; background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.6; }
+  .html-preview-area table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  .html-preview-area th, .html-preview-area td { border: 1px solid var(--border2); padding: 8px 10px; text-align: left; font-size: 12px; }
+  .html-preview-area th { background: var(--bg2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .html-preview-area ul, .html-preview-area ol { padding-left: 20px; margin: 6px 0; }
+  .html-preview-area li { margin-bottom: 4px; }
+  .html-preview-area h1,.html-preview-area h2,.html-preview-area h3 { margin: 10px 0 6px; }
+  .html-preview-area strong { color: var(--text); }
+  .html-preview-area em { color: var(--text2); }
+  .html-preview-area hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+  /* ANALYSE MODAL HTML */
+  .analyse-html-content table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  .analyse-html-content th, .analyse-html-content td { border: 1px solid var(--border2); padding: 8px 10px; text-align: left; font-size: 12px; }
+  .analyse-html-content th { background: var(--bg2); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+  .analyse-html-content ul, .analyse-html-content ol { padding-left: 20px; margin: 6px 0; }
+  .analyse-html-content strong { color: var(--text); }
+
+  /* EDIT ANALYSE PANEL */
+  .edit-analyse-panel { background: var(--bg2); border-radius: var(--radius); padding: 16px; margin-top: 12px; display: none; }
+  .edit-analyse-panel.open { display: block; }
+
   /* FILTERS */
   .filter-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 12px; }
   .filter-reset-btn { padding: 9px 14px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text2); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.12s; width: 100%; }
@@ -579,6 +607,15 @@
       </div>
       <p class="section-title">Analyse</p>
       <div class="form-group"><textarea id="a-text" placeholder="Tendance HTF, niveaux clés, plan de la semaine, zones d'intérêt..." style="min-height:100px;"></textarea></div>
+      <p class="section-title">Contenu HTML <span style="font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(tableaux, listes, mise en forme...)</span></p>
+      <div class="html-editor-wrap">
+        <div class="html-editor-tabs">
+          <button class="html-tab active" onclick="switchHtmlTab('code','a')">✏️ Code</button>
+          <button class="html-tab" onclick="switchHtmlTab('preview','a')">👁️ Preview</button>
+        </div>
+        <textarea id="a-html" class="html-code-area" placeholder="<table>&#10;  <tr><th>Paire</th><th>Biais</th><th>Niveau</th></tr>&#10;  <tr><td>EURUSD</td><td>Bullish</td><td>1.0850</td></tr>&#10;</table>&#10;&#10;Ou tout autre HTML : <strong>gras</strong>, <em>italique</em>, listes..."></textarea>
+        <div id="a-html-preview" class="html-preview-area" style="display:none;"></div>
+      </div>
       <p class="section-title">Niveaux clés</p>
       <div class="form-grid" style="grid-template-columns:1fr 1fr;">
         <div class="form-group"><label>Support</label><input type="text" id="a-support" placeholder="ex: 1.0850, 1.0780"></div>
@@ -1411,7 +1448,7 @@ function showAnalyseForm() {
 
 function hideAnalyseForm() {
   document.getElementById('analyse-form').style.display = 'none';
-  ['a-pair','a-text','a-support','a-resistance'].forEach(id => document.getElementById(id).value = '');
+  ['a-pair','a-text','a-support','a-resistance','a-html'].forEach(id => document.getElementById(id).value = '');
   analyseScreenshots = { sc1: null, sc2: null };
   // Reset screenshot zones
   [1,2].forEach(n => {
@@ -1447,6 +1484,7 @@ async function saveAnalyse() {
     session: document.getElementById('a-session').value,
     week: document.getElementById('a-week').value,
     text: document.getElementById('a-text').value,
+    html_content: document.getElementById('a-html').value,
     support: document.getElementById('a-support').value,
     resistance: document.getElementById('a-resistance').value,
     screenshot1: analyseScreenshots.sc1,
@@ -1513,6 +1551,7 @@ function renderAnalyses() {
           <span class="analyse-card-date" style="margin-left:auto;">${a.date}</span>
         </div>
         ${a.text ? `<div class="analyse-card-body">${a.text}</div>` : ''}
+        ${a.html_content ? `<div class="analyse-card-body analyse-html-content" style="-webkit-line-clamp:4;">${a.html_content}</div>` : ''}
         ${a.screenshot1 || a.screenshot2 ? `<div class="analyse-card-screens">
           ${a.screenshot1 ? `<img src="${a.screenshot1}" alt="chart">` : ''}
           ${a.screenshot2 ? `<img src="${a.screenshot2}" alt="chart">` : ''}
@@ -1538,11 +1577,30 @@ function formatWeekLabel(weekStr) {
   } catch(e) { return weekStr; }
 }
 
+function switchHtmlTab(tab, prefix) {
+  const codeEl = document.getElementById(prefix + '-html');
+  const previewEl = document.getElementById(prefix + '-html-preview');
+  const tabs = codeEl.closest('.html-editor-wrap').querySelectorAll('.html-tab');
+  if (tab === 'preview') {
+    codeEl.style.display = 'none';
+    previewEl.style.display = 'block';
+    previewEl.innerHTML = codeEl.value || '<span style="color:var(--text3)">Rien à afficher</span>';
+    tabs[0].classList.remove('active');
+    tabs[1].classList.add('active');
+  } else {
+    codeEl.style.display = 'block';
+    previewEl.style.display = 'none';
+    tabs[0].classList.add('active');
+    tabs[1].classList.remove('active');
+  }
+}
+
 function openAnalyse(id) {
   const a = analyses.find(x => x.id === id);
   if (!a) return;
   const biasLabel = {bullish:'🟢 Bullish',bearish:'🔴 Bearish',neutral:'⚪ Neutre'}[a.bias] || '';
   const biasCls = {bullish:'bias-bullish',bearish:'bias-bearish',neutral:'bias-neutral'}[a.bias] || 'bias-neutral';
+  const escHtml = (a.html_content || '').replace(/`/g, '\\`').replace(/\$/g, '\\$');
   document.getElementById('modal-body').innerHTML = `
     <div class="modal-title">${a.pair} — Analyse ${a.date}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
@@ -1556,11 +1614,81 @@ function openAnalyse(id) {
       ${a.screenshot2 ? `<img src="${a.screenshot2}" class="chart-img zoomable" style="margin:0;" onclick="openLightbox('${a.screenshot2}','Chart 2')">` : ''}
     </div>` : ''}
     ${a.text ? `<div class="analysis-block"><strong>Analyse</strong>${a.text}</div>` : ''}
+    ${a.html_content ? `<div class="analysis-block"><strong>Contenu formaté</strong><div class="analyse-html-content">${a.html_content}</div></div>` : ''}
     ${a.support ? `<div class="analysis-block"><strong>Support</strong>${a.support}</div>` : ''}
     ${a.resistance ? `<div class="analysis-block"><strong>Résistance</strong>${a.resistance}</div>` : ''}
+    <button class="edit-btn" onclick="toggleEditAnalyse(${a.id})">✏️ Modifier cette analyse</button>
+    <div class="edit-analyse-panel" id="edit-analyse-${a.id}">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Paire</label>
+          <input type="text" id="ea-pair-${a.id}" value="${a.pair || ''}" style="text-transform:uppercase;background:var(--bg);">
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="ea-date-${a.id}" value="${a.date || ''}" style="background:var(--bg);">
+        </div>
+        <div class="form-group">
+          <label>Biais</label>
+          <select id="ea-bias-${a.id}" style="background:var(--bg);">
+            <option value="bullish" ${a.bias==='bullish'?'selected':''}>🟢 Bullish</option>
+            <option value="bearish" ${a.bias==='bearish'?'selected':''}>🔴 Bearish</option>
+            <option value="neutral" ${a.bias==='neutral'?'selected':''}>⚪ Neutre</option>
+          </select>
+        </div>
+      </div>
+      <p class="section-title">Analyse</p>
+      <div class="form-group"><textarea id="ea-text-${a.id}" style="background:var(--bg);width:100%;min-height:80px;">${a.text || ''}</textarea></div>
+      <p class="section-title">Contenu HTML</p>
+      <div class="html-editor-wrap">
+        <div class="html-editor-tabs">
+          <button class="html-tab active" onclick="switchHtmlTab('code','ea-${a.id}')">✏️ Code</button>
+          <button class="html-tab" onclick="switchHtmlTab('preview','ea-${a.id}')">👁️ Preview</button>
+        </div>
+        <textarea id="ea-${a.id}-html" class="html-code-area">${(a.html_content || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+        <div id="ea-${a.id}-html-preview" class="html-preview-area" style="display:none;"></div>
+      </div>
+      <p class="section-title">Niveaux clés</p>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group"><label>Support</label><input type="text" id="ea-support-${a.id}" value="${a.support || ''}" style="background:var(--bg);"></div>
+        <div class="form-group"><label>Résistance</label><input type="text" id="ea-resistance-${a.id}" value="${a.resistance || ''}" style="background:var(--bg);"></div>
+      </div>
+      <button class="upd-btn" onclick="updateAnalyse(${a.id})">Enregistrer les modifications</button>
+    </div>
     <button class="del-btn" onclick="deleteAnalyse(${a.id})">Supprimer cette analyse</button>
   `;
   document.getElementById('modal').classList.add('open');
+}
+
+function toggleEditAnalyse(id) {
+  document.getElementById('edit-analyse-'+id).classList.toggle('open');
+}
+
+async function updateAnalyse(id) {
+  const idx = analyses.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  const updates = {
+    pair: (document.getElementById('ea-pair-'+id).value || '').trim().toUpperCase(),
+    date: document.getElementById('ea-date-'+id).value,
+    bias: document.getElementById('ea-bias-'+id).value,
+    text: document.getElementById('ea-text-'+id).value,
+    html_content: document.getElementById('ea-'+id+'-html').value,
+    support: document.getElementById('ea-support-'+id).value,
+    resistance: document.getElementById('ea-resistance-'+id).value,
+  };
+  await ensureAuth();
+  setSyncStatus('syncing');
+  const { error } = await sb.from('analyses').update(updates).eq('id', id).eq('user_id', currentUser.id);
+  if (!error) {
+    Object.assign(analyses[idx], updates);
+    document.getElementById('modal').classList.remove('open');
+    showToast('Analyse modifiée ✓');
+    setSyncStatus('online');
+    renderAnalyses();
+  } else {
+    showToast('Erreur: ' + (error.message || ''));
+    setSyncStatus('offline');
+  }
 }
 
 async function deleteAnalyse(id) {
