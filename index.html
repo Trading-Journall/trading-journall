@@ -625,7 +625,7 @@
     </div>
 
     <!-- FILTERS -->
-    <div class="analyse-filters" id="analyse-filters">
+    <div class="analyse-filters" id="analyse-filters" style="grid-template-columns:1fr 1fr 1fr 1fr;">
       <div class="form-group">
         <label>Paire</label>
         <select id="a-filter-pair" onchange="renderAnalyses()"><option value="">Toutes</option></select>
@@ -633,6 +633,10 @@
       <div class="form-group">
         <label>Semaine</label>
         <select id="a-filter-week" onchange="renderAnalyses()"><option value="">Toutes</option></select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="a-filter-date" onchange="renderAnalyses()" style="font-size:14px;padding:9px 11px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);font-family:inherit;outline:none;">
       </div>
       <div class="form-group" style="justify-content:flex-end;">
         <label>&nbsp;</label>
@@ -1518,6 +1522,8 @@ function renderAnalyses() {
   let filtered = analyses;
   if (curPair) filtered = filtered.filter(a => a.pair === curPair);
   if (curWeek) filtered = filtered.filter(a => a.week === curWeek);
+  const curDate = document.getElementById('a-filter-date').value;
+  if (curDate) filtered = filtered.filter(a => a.date === curDate);
 
   const el = document.getElementById('analyses-list');
   if (!filtered.length) {
@@ -1710,6 +1716,7 @@ async function deleteAnalyse(id) {
 function resetAnalyseFilters() {
   document.getElementById('a-filter-pair').value = '';
   document.getElementById('a-filter-week').value = '';
+  document.getElementById('a-filter-date').value = '';
   renderAnalyses();
 }
 
