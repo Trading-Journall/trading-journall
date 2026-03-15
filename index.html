@@ -245,6 +245,7 @@
   .analyse-html-content th { background: var(--bg2); font-weight: 600; font-size: 11px; text-transform: uppercase; }
   .analyse-html-content ul, .analyse-html-content ol { padding-left: 20px; margin: 6px 0; }
   .analyse-html-content strong { color: var(--text); }
+  .analyse-iframe { width: 100%; border: none; border-radius: 8px; background: #fff; min-height: 200px; }
 
   /* EDIT ANALYSE PANEL */
   .edit-analyse-panel { background: var(--bg2); border-radius: var(--radius); padding: 16px; margin-top: 12px; display: none; }
@@ -1557,7 +1558,7 @@ function renderAnalyses() {
           <span class="analyse-card-date" style="margin-left:auto;">${a.date}</span>
         </div>
         ${a.text ? `<div class="analyse-card-body">${a.text}</div>` : ''}
-        ${a.html_content ? `<div class="analyse-card-body analyse-html-content" style="-webkit-line-clamp:4;">${a.html_content}</div>` : ''}
+        ${a.html_content && !a.text ? `<div class="analyse-card-body" style="color:var(--text3);font-style:italic;">📄 Contenu HTML — cliquer pour voir</div>` : ''}
         ${a.screenshot1 || a.screenshot2 ? `<div class="analyse-card-screens">
           ${a.screenshot1 ? `<img src="${a.screenshot1}" alt="chart">` : ''}
           ${a.screenshot2 ? `<img src="${a.screenshot2}" alt="chart">` : ''}
@@ -1590,7 +1591,8 @@ function switchHtmlTab(tab, prefix) {
   if (tab === 'preview') {
     codeEl.style.display = 'none';
     previewEl.style.display = 'block';
-    previewEl.innerHTML = codeEl.value || '<span style="color:var(--text3)">Rien à afficher</span>';
+    const htmlCode = codeEl.value || '<span style="color:#999">Rien à afficher</span>';
+    previewEl.innerHTML = `<iframe srcdoc="${htmlCode.replace(/"/g,'&quot;')}" style="width:100%;border:none;border-radius:6px;min-height:200px;background:#fff;" onload="try{this.style.height=Math.min(this.contentDocument.body.scrollHeight+20,500)+'px'}catch(e){this.style.height='300px'}"></iframe>`;
     tabs[0].classList.remove('active');
     tabs[1].classList.add('active');
   } else {
@@ -1620,7 +1622,7 @@ function openAnalyse(id) {
       ${a.screenshot2 ? `<img src="${a.screenshot2}" class="chart-img zoomable" style="margin:0;" onclick="openLightbox('${a.screenshot2}','Chart 2')">` : ''}
     </div>` : ''}
     ${a.text ? `<div class="analysis-block"><strong>Analyse</strong>${a.text}</div>` : ''}
-    ${a.html_content ? `<div class="analysis-block"><strong>Contenu formaté</strong><div class="analyse-html-content">${a.html_content}</div></div>` : ''}
+    ${a.html_content ? `<div class="analysis-block"><strong>Contenu formaté</strong><div style="margin-top:8px;"><iframe id="html-iframe-${a.id}" class="analyse-iframe" srcdoc="" frameborder="0" scrolling="auto"></iframe></div></div>` : ''}
     ${a.support ? `<div class="analysis-block"><strong>Support</strong>${a.support}</div>` : ''}
     ${a.resistance ? `<div class="analysis-block"><strong>Résistance</strong>${a.resistance}</div>` : ''}
     <button class="edit-btn" onclick="toggleEditAnalyse(${a.id})">✏️ Modifier cette analyse</button>
@@ -1664,6 +1666,22 @@ function openAnalyse(id) {
     <button class="del-btn" onclick="deleteAnalyse(${a.id})">Supprimer cette analyse</button>
   `;
   document.getElementById('modal').classList.add('open');
+  // Populate iframe with full HTML content
+  if (a.html_content) {
+    setTimeout(() => {
+      const iframe = document.getElementById('html-iframe-'+a.id);
+      if (iframe) {
+        iframe.srcdoc = a.html_content;
+        // Auto-resize iframe to fit content
+        iframe.onload = () => {
+          try {
+            const h = iframe.contentDocument.body.scrollHeight;
+            iframe.style.height = Math.min(h + 20, 600) + 'px';
+          } catch(e) { iframe.style.height = '400px'; }
+        };
+      }
+    }, 50);
+  }
 }
 
 function toggleEditAnalyse(id) {
